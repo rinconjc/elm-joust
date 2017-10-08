@@ -8,15 +8,16 @@ import Window
 import Task
 import AnimationFrame
 import Keyboard exposing (KeyCode)
-
+import WebSocket
 
 type Msg
   = ResizeWindow (Int,Int)
   | Tick Time
-  | KeyChange Bool KeyCode
+  | KeyChange Bool KeyCode --remote? up/down?
   | StartGame
   | TimeSecond Time
   | NoOp
+  | WsMsg String
 
 
 subscriptions : Model -> Sub Msg
@@ -40,7 +41,7 @@ subscriptions {ui} =
        GameoverScreen ->
          [ window ] ++ keys
 
-     ) |> Sub.batch
+     ) ++ [WebSocket.listen wsServer WsMsg] |> Sub.batch
 
 
 initialWindowSizeCommand : Cmd Msg

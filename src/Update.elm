@@ -10,9 +10,10 @@ import Model.Ui exposing (..)
 import Model.Scene exposing (..)
 import Model.Geometry exposing (..)
 import Subscription exposing (..)
-
+import Json.Decode as Decode exposing (field, decodeString, map2)
+import Json.Encode exposing (..)
 import Debug exposing (log)
-
+import WebSocket
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update action ({ui,scene} as model) =
@@ -49,7 +50,7 @@ update action ({ui,scene} as model) =
           ({ model | scene = scene_, ui = ui_ }, Cmd.none)
 
     KeyChange pressed keycode ->
-      (handleKeyChange pressed keycode model, Cmd.none)
+      (handleKeyChange pressed keycode model, replicateKeyChange pressed keycode)
 
     StartGame ->
       (freshGame ui, Cmd.none)
@@ -57,9 +58,18 @@ update action ({ui,scene} as model) =
     TimeSecond _ ->
       ({ model | secondsPassed = model.secondsPassed+1 }, Cmd.none)
 
+    WsMsg msg ->
+        let decoder = map2 (\p k -> handleKeyChange p k model)
+                      (field "pressed" Decode.bool) (field "keycode" Decode.int)
+        in (decodeString decoder msg |> Result.withDefault model, Cmd.none)
     NoOp ->
       (model, Cmd.none)
 
+
+replicateKeyChange : Bool-> Int -> Cmd Msg
+replicateKeyChange pressed keycode =
+    WebSocket.send wsServer << encode 0 <<
+        object <| [("pressed", bool pressed), ("keycode", int keycode)]
 
 applyScores : Player -> Player -> Bool -> (Player,Player)
 applyScores player1 player2 isRoundOver =
@@ -146,7 +156,8 @@ movePlayer delta ({velocity,position} as player) =
                              , y = vy_ }
   in
       { player | position = position_
-               , velocity = velocity_ }
+               , velocity = velocity_
+      }
 
 
 

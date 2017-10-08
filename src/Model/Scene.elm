@@ -13,6 +13,10 @@ type alias Scene =
   , player2 : Player
   , round : Round }
 
+type Facing = Right | Left
+
+type Avatar = Circle String | Image String Facing
+
 type alias Player =
   { score : Int
   , homePosX : Float
@@ -20,28 +24,32 @@ type alias Player =
   , rightKey : KeyCode
   , jumpKey : KeyCode
   , position : Vector
-  , velocity : Vector }
+  , velocity : Vector
+  , avatar : Avatar}
 
 type alias Round =
   { touchdownTime : Time }
 
+blue = "rgba(0,0,255,.5)"
+orange = "rgba(255,165,0,.5)"
+
 initialScene : Scene
 initialScene =
   { t = 0
-  , player1 = createPlayer 'A' 'D' 'W' 0.25
-  , player2 = createPlayer 'J' 'L' 'I' 0.75
-  , round = newRound }
+  , player1 = createPlayer 'A' 'D' 'W' 0.25 (Image "images/dragon4.png" Right)
+  , player2 = createPlayer 'J' 'L' 'I' 0.75 (Image "images/dragon.png" Left)
+  , round = newRound}
 
-
-createPlayer : Char -> Char -> Char ->  Float -> Player
-createPlayer leftKey rightKey jumpKey posX =
+createPlayer : Char -> Char -> Char ->  Float -> Avatar -> Player
+createPlayer leftKey rightKey jumpKey posX avatar =
   { score = 0
   , homePosX = posX
   , leftKey = Char.toCode leftKey
   , rightKey = Char.toCode rightKey
   , jumpKey = Char.toCode jumpKey
   , position = { x = posX, y = playerHomePosY }
-  , velocity = { x = 0, y = 0 } }
+  , velocity = { x = 0, y = 0 }
+  , avatar = avatar}
 
 
 newRound : Round
@@ -71,7 +79,7 @@ iceWidth = 0.8
 
 
 playerRadius : Float
-playerRadius = 0.03
+playerRadius = 0.06
 
 
 players : Scene -> List Player

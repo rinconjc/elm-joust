@@ -32,3 +32,6 @@ freshGame ui =
 winScore : Int
 winScore =
   5
+
+wsServer : String
+wsServer = "ws://192.168.0.111:8080/"

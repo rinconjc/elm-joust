@@ -1,12 +1,10 @@
 module View exposing (view)
 
-import Html exposing (Html, div)
-import Html.Attributes exposing (class)
+import Html exposing (Html, div, button, text)
+import Html.Attributes exposing (class, style)
 import Svg exposing (Svg,Attribute)
 import Svg.Attributes as Attributes exposing (x,y,width,height,fill,fontFamily,textAnchor)
 import Svg.Events exposing (onClick)
-import Time exposing (Time)
-import String
 
 import Model exposing (..)
 import Model.Ui exposing (..)
@@ -14,7 +12,7 @@ import Model.Scene exposing (..)
 import Subscription exposing (..)
 
 import VirtualDom
-import Json.Encode as Json
+import Json.Encode as Jsonv
 
 
 view : Model -> Html Msg
@@ -53,10 +51,13 @@ renderStartScreen (w,h) secondsPassed =
           ++ (if secondsPassed >= 1 then [ keys, goal, win ] else [] )
           ++ (if secondsPassed >= 3 && secondsPassed%2 == 1 then [ clickToStart ] else [] )
   in
-      Svg.svg
-        screenAttrs
-        children
+      div [] [Svg.svg screenAttrs children]
 
+renderSoftKeys : (Int,Int) -> Html Msg
+renderSoftKeys (w,h) =
+    div [style [("position","absolute"), ("height","100px") , ("width", "100px") , ("z-Index", "100"),
+               ("left", toString (w - 100)), ("top", toString (h - 100))]]
+        [button [style [("margin-left","25px")]] [text "^"]]
 
 renderAuthorLink : (Int,Int) -> Svg Msg
 renderAuthorLink (w,h) =
@@ -126,7 +127,7 @@ svgAttributes (w, h) =
   [ width (toString w)
   , height (toString h)
   , Attributes.viewBox <| "0 0 " ++ (toString w) ++ " " ++ (toString h)
-  , VirtualDom.property "xmlns:xlink" (Json.string "http://www.w3.org/1999/xlink")
+  , VirtualDom.property "xmlns:xlink" (Jsonv.string "http://www.w3.org/1999/xlink")
   , Attributes.version "1.1"
   , Attributes.style "position: fixed; cursor: none;"
   ]
@@ -151,20 +152,32 @@ renderIce (w,h) =
 
 
 renderPlayer : (Int,Int) -> Player -> Svg Msg
-renderPlayer (w,h) {position} =
+renderPlayer (w,h) {position, avatar} =
   let
-      x = (toFloat w) * position.x |> toString
-      y = (toFloat (h-w)) + (toFloat w) * (position.y-playerRadius) |> toString
-      radius = (toFloat w) * playerRadius |> toString
-  in
-      Svg.circle
-        [ Attributes.cx x
-        , Attributes.cy y
-        , Attributes.r radius
-        , fill softWhite
-        ]
-        []
-
+      cx = (toFloat w) * position.x
+      cy = (toFloat (h-w)) + (toFloat w) * (position.y-playerRadius)
+      radius = (toFloat w) * playerRadius
+      x = cx - radius
+      y = cy - radius
+  in case avatar of
+         Circle color ->
+             Svg.circle
+                 [ Attributes.cx (cx |> toString)
+                 , Attributes.cy (cy |> toString)
+                 , Attributes.r (radius |> toString)
+                 , fill color
+                 ]
+                 []
+         Image path facing ->
+             Svg.image
+                 [Attributes.xlinkHref path
+                 , Attributes.x (x |> toString)
+                 , Attributes.y (y |> toString)
+                 , Attributes.width (2 * radius |> toString)
+                 , Attributes.height (2 * radius |> toString)
+                 -- , Attributes.transform  (concat ["rotate(180, ", toString x, ",", toString y, ")"])
+                 ]
+                 []
 
 renderScores : (Int,Int) -> Int -> Int -> Svg Msg
 renderScores (w,h) p1score p2score =
