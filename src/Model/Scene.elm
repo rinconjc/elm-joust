@@ -36,8 +36,8 @@ orange = "rgba(255,165,0,.5)"
 initialScene : Scene
 initialScene =
   { t = 0
-  , player1 = createPlayer 'A' 'D' 'W' 0.25 (Image "images/dragon4.png" Right)
-  , player2 = createPlayer 'J' 'L' 'I' 0.75 (Image "images/dragon.png" Left)
+  , player1 = createPlayer 'A' 'D' 'W' 0.25 (Image "images/dragon.png" Left)
+  , player2 = createPlayer 'J' 'L' 'I' 0.75 (Image "images/pirana.png" Right)
   , round = newRound}
 
 createPlayer : Char -> Char -> Char ->  Float -> Avatar -> Player
